@@ -151,10 +151,10 @@ optional<JSONTransport::HeaderMap> JSONTransport::parseHeaders()
 		if (delimiterPos == string::npos)
 			return nullopt;
 
-		auto const name = boost::to_lower_copy(line.substr(0, delimiterPos));
-		auto const value = boost::trim_copy(line.substr(delimiterPos + 1));
-
-		headers[name] = value;
+		headers.emplace(std::pair{
+			boost::trim_copy(line.substr(delimiterPos + 1)),
+			boost::to_lower_copy(line.substr(0, delimiterPos))
+		});
 	}
 	return {headers};
 }

@@ -955,7 +955,7 @@ void LanguageServer::handleMessage(Json::Value const& _jsonMessage)
 	string const methodName = _jsonMessage["method"].asString();
 
 	MessageId const id = _jsonMessage["id"].isInt()
-		? MessageId{_jsonMessage["id"].asInt()}
+		? MessageId{to_string(_jsonMessage["id"].asInt())}
 		: _jsonMessage["id"].isString()
 			? MessageId{_jsonMessage["id"].asString()}
 			: MessageId{};

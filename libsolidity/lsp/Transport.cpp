@@ -79,7 +79,6 @@ optional<Json::Value> JSONTransport::receive()
 void JSONTransport::notify(string const& _method, Json::Value const& _message)
 {
 	Json::Value json;
-	json["jsonrpc"] = "2.0";
 	json["method"] = _method;
 	json["params"] = _message;
 	send(json);
@@ -88,32 +87,24 @@ void JSONTransport::notify(string const& _method, Json::Value const& _message)
 void JSONTransport::reply(MessageId const& _id, Json::Value const& _message)
 {
 	Json::Value json;
-	json["jsonrpc"] = "2.0";
 	json["result"] = _message;
-	visit(solidity::util::GenericVisitor{
-		[&](int _id) { json["id"] = _id; },
-		[&](string const& _id) { json["id"] = _id; },
-		[&](monostate) {}
-	}, _id);
-	send(json);
+	send(json, _id);
 }
 
 void JSONTransport::error(MessageId const& _id, ErrorCode _code, string const& _message)
 {
 	Json::Value json;
-	json["jsonrpc"] = "2.0";
-	visit(solidity::util::GenericVisitor{
-		[&](int _id) { json["id"] = _id; },
-		[&](string const& _id) { json["id"] = _id; },
-		[&](monostate) {}
-	}, _id);
 	json["error"]["code"] = static_cast<int>(_code);
 	json["error"]["message"] = _message;
-	send(json);
+	send(json, _id);
 }
 
-void JSONTransport::send(Json::Value const& _json)
+void JSONTransport::send(Json::Value _json, optional<MessageId> _id)
 {
+	_json["jsonrpc"] = "2.0";
+	if (_id.has_value())
+		_json["id"] = _id.value();
+
 	string const jsonString = solidity::util::jsonCompactPrint(_json);
 
 	m_output << "Content-Length: " << jsonString.size() << "\r\n";

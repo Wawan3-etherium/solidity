@@ -33,7 +33,7 @@ namespace solidity::lsp {
 //
 // This file contains the high level definitions of the underlying transport protocol.
 // It is not meant to include all but only what is necessary for solls.
-using MessageId = std::variant<int, std::string>;
+using MessageId = std::string;
 
 enum class ErrorCode
 {
@@ -108,7 +108,7 @@ protected:
 	/// Sends an arbitrary raw message to the client.
 	///
 	/// Used by the notify/reply/error function family.
-	virtual void send(Json::Value const& _message);
+	virtual void send(Json::Value _message, std::optional<MessageId> _id = std::nullopt);
 
 	/// Parses a single text line from the client ending with CRLF (or just LF).
 	std::string readLine();

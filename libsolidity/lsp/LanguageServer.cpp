@@ -583,7 +583,7 @@ bool LanguageServer::run()
 		optional<Json::Value> const jsonMessage = m_client->receive();
 		if (!jsonMessage.has_value())
 		{
-			m_client->error(nullopt, ErrorCode::InvalidRequest, "Could not parse request.");
+			m_client->error(Json::nullValue, ErrorCode::InvalidRequest, "Could not parse request.");
 			continue;
 		}
 

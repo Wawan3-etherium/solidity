@@ -27,9 +27,7 @@
 
 using std::cin;
 using std::cout;
-using std::get;
 using std::function;
-using std::holds_alternative;
 using std::istream;
 using std::nullopt;
 using std::optional;
@@ -94,7 +92,7 @@ void JSONTransport::reply(MessageId const& _id, Json::Value const& _message)
 	send(json, _id);
 }
 
-void JSONTransport::error(optional<MessageId> _id, ErrorCode _code, string const& _message)
+void JSONTransport::error(MessageId _id, ErrorCode _code, string const& _message)
 {
 	Json::Value json;
 	json["error"]["code"] = static_cast<int>(_code);
@@ -102,16 +100,11 @@ void JSONTransport::error(optional<MessageId> _id, ErrorCode _code, string const
 	send(json, _id);
 }
 
-void JSONTransport::send(Json::Value _json, optional<MessageId> _id)
+void JSONTransport::send(Json::Value _json, MessageId _id)
 {
 	_json["jsonrpc"] = "2.0";
-	if (_id.has_value())
-	{
-		if (holds_alternative<string>(_id.value()))
-			_json["id"] = get<string>(_id.value());
-		else if (holds_alternative<long int>(_id.value()))
-			_json["id"] = get<long int>(_id.value());
-	}
+	if (!_id.isNull())
+		_json["id"] = _id;
 
 	string const jsonString = solidity::util::jsonCompactPrint(_json);
 

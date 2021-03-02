@@ -29,7 +29,7 @@
 
 namespace solidity::lsp {
 
-using MessageId = std::variant<std::string, long int>;
+using MessageId = Json::Value;
 
 enum class ErrorCode
 {
@@ -70,7 +70,7 @@ public:
 	std::optional<Json::Value> receive();
 	void notify(std::string const& _method, Json::Value const& _params);
 	void reply(MessageId const& _id, Json::Value const& _result);
-	void error(std::optional<MessageId> _id, ErrorCode _code, std::string const& _message);
+	void error(MessageId _id, ErrorCode _code, std::string const& _message);
 
 protected:
 	using HeaderMap = std::map<std::string, std::string>;
@@ -81,7 +81,7 @@ protected:
 	/// Sends an arbitrary raw message to the client.
 	///
 	/// Used by the notify/reply/error function family.
-	virtual void send(Json::Value _message, std::optional<MessageId> _id = std::nullopt);
+	virtual void send(Json::Value _message, MessageId _id = Json::nullValue);
 
 	/// Parses a single text line from the client ending with CRLF (or just LF).
 	std::string readLine();

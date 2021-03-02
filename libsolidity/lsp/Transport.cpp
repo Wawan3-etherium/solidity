@@ -117,17 +117,8 @@ void JSONTransport::send(Json::Value _json, optional<MessageId> _id)
 
 void JSONTransport::traceMessage(Json::Value const& _message, std::string_view _title)
 {
-	if (m_trace)
-	{
-		auto const jsonString = solidity::util::jsonPrettyPrint(_message);
-
-		stringstream sstr;
-		sstr << _title << ": " << jsonString;
-
-		if (_message["method"] && _message["method"].asString() == "window/logMessage")
-			return;
-		m_trace(sstr.str());
-	}
+	if (m_trace && _message["method"])
+		m_trace(string(_title) + ": " + solidity::util::jsonPrettyPrint(_message));
 }
 
 string JSONTransport::readLine()
@@ -135,6 +126,8 @@ string JSONTransport::readLine()
 	string line;
 
 	getline(m_input, line);
+
+	// Calling getline() trims the LF already, but if a CRLF is passed, the CR needs to be trimmed off, too.
 	if (!line.empty() && line.back() == '\r')
 		line.resize(line.size() - 1);
 
@@ -156,7 +149,7 @@ optional<JSONTransport::HeaderMap> JSONTransport::parseHeaders()
 			boost::to_lower_copy(line.substr(0, delimiterPos))
 		});
 	}
-	return {headers};
+	return {move(headers)};
 }
 
 string JSONTransport::readBytes(int _n)

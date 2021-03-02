@@ -29,11 +29,7 @@
 
 namespace solidity::lsp {
 
-// NOTE: https://microsoft.github.io/language-server-protocol/specifications/specification-3-14/
-//
-// This file contains the high level definitions of the underlying transport protocol.
-// It is not meant to include all but only what is necessary for solls.
-using MessageId = std::string;
+using MessageId = std::variant<std::string, long int>;
 
 enum class ErrorCode
 {
@@ -74,7 +70,7 @@ public:
 	std::optional<Json::Value> receive();
 	void notify(std::string const& _method, Json::Value const& _params);
 	void reply(MessageId const& _id, Json::Value const& _result);
-	void error(MessageId const& _id, ErrorCode _code, std::string const& _message);
+	void error(std::optional<MessageId> _id, ErrorCode _code, std::string const& _message);
 
 protected:
 	using HeaderMap = std::map<std::string, std::string>;

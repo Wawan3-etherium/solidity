@@ -580,25 +580,21 @@ bool LanguageServer::run()
 {
 	while (!m_exitRequested && !m_client->closed())
 	{
-		// TODO: receive() must return a variant<> to also return on <Transport::TimeoutEvent>,
-		// so that we can perform some idle tasks in the meantime, such as
-		// - lazy validation runs
-		// - check for results of asynchronous runs (in case we want to support threaded background jobs)
-		// Also, EOF should be noted properly as a <Transport::ClosedEvent>.
 		optional<Json::Value> const jsonMessage = m_client->receive();
-		if (jsonMessage.has_value())
+		if (!jsonMessage.has_value())
 		{
-			try
-			{
-				handleMessage(*jsonMessage);
-			}
-			catch (std::exception const& e)
-			{
-				log("Unhandled exception caught when handling message. "s + e.what());
-			}
+			m_client->error(nullopt, ErrorCode::InvalidRequest, "Could not parse request.");
+			continue;
 		}
-		else
-			log("Could not read RPC request.");
+
+		try
+		{
+			handleMessage(*jsonMessage);
+		}
+		catch (std::exception const& e)
+		{
+			log("Unhandled exception caught when handling message. "s + e.what());
+		}
 	}
 
 	if (m_shutdownRequested)

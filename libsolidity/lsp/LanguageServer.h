@@ -112,12 +112,6 @@ protected:
 	std::vector<langutil::SourceLocation> references(DocumentPosition _documentPosition);
 	// }}}
 
-	/// Sends a message to the client.
-	///
-	/// @param _id an optional request ID that this response relates to
-	/// @param _message the message to send to the client
-	void error(MessageId const& _id, ErrorCode, std::string const& _message);
-
 	/// Logs a message (should be used for logging messages that are informationally useful to the client).
 	void log(std::string const& _message);
 

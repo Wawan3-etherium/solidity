@@ -27,24 +27,27 @@
 
 using std::cin;
 using std::cout;
+using std::get;
+using std::function;
+using std::holds_alternative;
 using std::istream;
-using std::monostate;
 using std::nullopt;
 using std::optional;
 using std::ostream;
 using std::string;
+using std::string_view;
 using std::stringstream;
 
 namespace solidity::lsp {
 
-JSONTransport::JSONTransport(istream& _in, ostream& _out, std::function<void(std::string_view)> _trace):
+JSONTransport::JSONTransport(istream& _in, ostream& _out, function<void(string_view)> _trace):
 	m_input{_in},
 	m_output{_out},
 	m_trace{std::move(_trace)}
 {
 }
 
-JSONTransport::JSONTransport(std::function<void(std::string_view)> _trace):
+JSONTransport::JSONTransport(function<void(string_view)> _trace):
 	JSONTransport(cin, cout, std::move(_trace))
 {
 }
@@ -91,7 +94,7 @@ void JSONTransport::reply(MessageId const& _id, Json::Value const& _message)
 	send(json, _id);
 }
 
-void JSONTransport::error(MessageId const& _id, ErrorCode _code, string const& _message)
+void JSONTransport::error(optional<MessageId> _id, ErrorCode _code, string const& _message)
 {
 	Json::Value json;
 	json["error"]["code"] = static_cast<int>(_code);
@@ -103,7 +106,12 @@ void JSONTransport::send(Json::Value _json, optional<MessageId> _id)
 {
 	_json["jsonrpc"] = "2.0";
 	if (_id.has_value())
-		_json["id"] = _id.value();
+	{
+		if (holds_alternative<string>(_id.value()))
+			_json["id"] = get<string>(_id.value());
+		else if (holds_alternative<long int>(_id.value()))
+			_json["id"] = get<long int>(_id.value());
+	}
 
 	string const jsonString = solidity::util::jsonCompactPrint(_json);
 
@@ -115,9 +123,9 @@ void JSONTransport::send(Json::Value _json, optional<MessageId> _id)
 	traceMessage(_json, "Response");
 }
 
-void JSONTransport::traceMessage(Json::Value const& _message, std::string_view _title)
+void JSONTransport::traceMessage(Json::Value const& _message, string_view _title)
 {
-	if (m_trace && _message["method"])
+	if (m_trace)
 		m_trace(string(_title) + ": " + solidity::util::jsonPrettyPrint(_message));
 }
 
@@ -144,10 +152,9 @@ optional<JSONTransport::HeaderMap> JSONTransport::parseHeaders()
 		if (delimiterPos == string::npos)
 			return nullopt;
 
-		headers.emplace(std::pair{
-			boost::trim_copy(line.substr(delimiterPos + 1)),
-			boost::to_lower_copy(line.substr(0, delimiterPos))
-		});
+		auto const name = boost::to_lower_copy(line.substr(0, delimiterPos));
+		auto const value = boost::trim_copy(line.substr(delimiterPos + 1));
+		headers[move(name)] = value;
 	}
 	return {move(headers)};
 }

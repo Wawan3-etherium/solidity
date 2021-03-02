@@ -33,6 +33,7 @@
 #include <boost/filesystem/path.hpp>
 
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <optional>
@@ -60,7 +61,8 @@ public:
 	using Logger = std::function<void(std::string_view)>;
 
 	/// @param _logger special logger used for debugging the LSP.
-	explicit LanguageServer(std::unique_ptr<Transport> _client, Logger _logger);
+	LanguageServer(Logger _logger, std::istream& _in, std::ostream& _out);
+	explicit LanguageServer(Logger _logger): LanguageServer(std::move(_logger), std::cin, std::cout) {}
 
 	/// performs a validation run.
 	///
@@ -141,7 +143,7 @@ protected:
 	using Handler = std::function<void(MessageId, Json::Value const&)>;
 	using HandlerMap = std::unordered_map<std::string, Handler>;
 
-	std::unique_ptr<Transport> m_client;
+	std::unique_ptr<JSONTransport> m_client;
 	HandlerMap m_handlers;
 	bool m_shutdownRequested = false;
 	bool m_exitRequested = false;

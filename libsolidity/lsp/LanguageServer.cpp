@@ -137,8 +137,8 @@ namespace // {{{ helpers
 	}
 } // }}} end helpers
 
-LanguageServer::LanguageServer(unique_ptr<Transport> _client, Logger _logger):
-	m_client{std::move(_client)},
+LanguageServer::LanguageServer(Logger _logger, istream& _in, ostream& _out):
+	m_client{make_unique<JSONTransport>(_in, _out, _logger)},
 	m_handlers{
 		{"cancelRequest", [](auto, auto) {/*don't do anything for now, as we're synchronous*/}},
 		{"$/cancelRequest", [](auto, auto) {/*don't do anything for now, as we're synchronous*/}},

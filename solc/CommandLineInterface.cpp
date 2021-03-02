@@ -1757,7 +1757,7 @@ bool CommandLineInterface::serveLSP()
 		fprintf(stderr, "%s\n", string(_msg).c_str());
 	};
 
-	lsp::LanguageServer languageServer(make_unique<lsp::JSONTransport>(traceLogger), traceLogger);
+	lsp::LanguageServer languageServer(traceLogger);
 	return languageServer.run();
 }
 

@@ -639,9 +639,6 @@ void LanguageServer::handle_initialize(MessageId _id, Json::Value const& _args)
 	}
 #endif
 
-	// TODO: ClientCapabilities
-	// ... Do we actually care? Not in the initial PR.
-
 	auto const fspath = boost::filesystem::path(rootPath);
 
 	m_basePath = fspath;

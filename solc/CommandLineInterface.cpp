@@ -929,6 +929,11 @@ General Information)").c_str(),
 			"Enables Language Server (LSP) mode. "
 			"This won't compile input but serves as language server to to clients."
 		)
+		(
+			"lsp-trace",
+			po::value<string>()->value_name("path"),
+			"Writes a trace log file when running in LSP mode. Only useful when debugging solc LSP."
+		)
 	;
 	desc.add(alternativeInputModes);
 
@@ -1107,7 +1112,7 @@ General Information)").c_str(),
 	static vector<string> const allowedWithLSP{
 		// LSP related arguments.
 		"lsp",
-		"lsp-port",
+		"lsp-trace",
 		// Defaulted arguments must be listed.
 		g_argModelCheckerEngine,
 		g_argModelCheckerTargets,
@@ -1751,10 +1756,16 @@ void CommandLineInterface::handleAst()
 
 bool CommandLineInterface::serveLSP()
 {
-	auto const lspPortStr = m_args.count("lsp-port") != 0 ? m_args.at("lsp-port").as<string>() : ""s;
+	std::unique_ptr<ofstream> traceLog;
+	if (m_args.count("lsp-trace"))
+		traceLog = make_unique<ofstream>(m_args.at("lsp-trace").as<string>(), std::ios::app);
+	else
+		traceLog = make_unique<ofstream>("/tmp/solc.lsp.log", std::ios::app);
 
-	auto const traceLogger = [](string_view _msg) {
-		fprintf(stderr, "%s\n", string(_msg).c_str());
+	auto const traceLogger = [&traceLog](string_view _msg) {
+
+		if (traceLog)
+			*traceLog << _msg << endl;
 	};
 
 	lsp::LanguageServer languageServer(traceLogger);

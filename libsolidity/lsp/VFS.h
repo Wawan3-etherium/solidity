@@ -49,8 +49,6 @@ public:
 	void modify(LineColumnRange _range, std::string const& _replacementText);
 	void replace(std::string const& _replacementText);
 
-	static TextLines splitLines(std::string const& _text);
-
 private:
 	std::string m_path;
 	std::string m_languageId;

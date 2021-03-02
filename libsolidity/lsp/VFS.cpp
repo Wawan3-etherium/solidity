@@ -69,28 +69,6 @@ File::File(string _path, string _languageId, int _version, string _text):
 {
 }
 
-TextLines File::splitLines(string const& _text)
-{
-	TextLines result;
-
-	size_t last = 0;
-	size_t next = _text.find('\n');
-
-	while (next != _text.npos) // string::npos
-	{
-		result.push_back(_text.substr(last, next - last));
-		last = next + 1;
-		next = _text.find('\n', last);
-	}
-
-	if (last != 0)
-		result.push_back(_text.substr(last));
-	else
-		result.push_back(_text);
-
-	return result;
-}
-
 void File::erase(LineColumnRange _range)
 {
 	m_buffer.replace(_range, "");
